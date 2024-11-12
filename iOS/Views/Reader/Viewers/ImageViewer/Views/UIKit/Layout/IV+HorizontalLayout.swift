@@ -55,13 +55,23 @@ class HImageViewerLayout: UICollectionViewFlowLayout, OffsetPreservingLayout {
     }
 
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-        let isInverted = readingMode.isInverted
+        let attributes = super.layoutAttributesForElements(in: rect) ?? []
+        return attributes.map { base in
 
-        let layoutAttributes = super.layoutAttributesForElements(in: rect) ?? []
-        for attribute in layoutAttributes {
-            attribute.transform = !isInverted ? .identity : .init(scaleX: -1, y: 1)
+            var attribute = base
+            if attribute.representedElementCategory == .cell {
+                let indexPath = attribute.indexPath
+                attribute = self.layoutAttributesForItem(at:indexPath) ?? base
+            }
+            
+            return attribute
         }
-
-        return layoutAttributes
+    }
+    
+    override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        let attribute = super.layoutAttributesForItem(at: indexPath)
+        let isInverted = readingMode.isInverted
+        attribute?.transform = isInverted ? .init(scaleX: -1, y: 1) : .identity
+        return attribute
     }
 }
